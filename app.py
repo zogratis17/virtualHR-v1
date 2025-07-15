@@ -3,6 +3,7 @@ import streamlit as st
 import google.generativeai as genai
 import PyPDF2
 from dotenv import load_dotenv
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -17,6 +18,9 @@ def extract_text_from_pdf(uploaded_file):
     for page in pdf_reader.pages:
         extracted_text += page.extract_text()
     return extracted_text
+
+# Set the page configuration
+st.set_page_config(page_title="Virtual HR 💼", page_icon="💼")
 
 # Start the Streamlit App
 st.title("Virtual HR - Mock Interview Simulator")
@@ -42,6 +46,8 @@ if "response" not in st.session_state:
     st.session_state["response"] = None
 if "ongoing" not in st.session_state:
     st.session_state["ongoing"] = False
+if "show_resume_text" not in st.session_state:
+    st.session_state["show_resume_text"] = False
 
 # Step 3: Start Mock Interview
 if st.button("Start Mock Interview") and resume_text and job_role:
@@ -75,9 +81,27 @@ if st.session_state["ongoing"]:
             st.session_state["ongoing"] = True
             st.query_params.clear()  # Clear query params to trigger a rerun
 
+    # Stop Interview Button
+    if st.button("Stop Interview"):
+        st.session_state["ongoing"] = False
+        st.session_state["chat"] = None
+        st.session_state["response"] = None
+        st.success("Interview process stopped.")
 
+# Reset Fields Button
+if st.button("Reset Fields"):
+    st.session_state.clear()
+    st.markdown("<script>window.location.reload()</script>", unsafe_allow_html=True)
+
+# Toggle to show/hide extracted resume text
+if resume_text:
+    if st.button("Show/Hide Extracted Resume Text"):
+        if "show_resume_text" not in st.session_state:
+            st.session_state["show_resume_text"] = False
+        st.session_state["show_resume_text"] = not st.session_state["show_resume_text"]
+    if "show_resume_text" in st.session_state and st.session_state["show_resume_text"]:
+        st.text_area("Extracted Resume Text", resume_text, height=200)
 
 # Footer
 st.markdown("---")
-st.markdown("Powered by Google Gemini API and Streamlit")
-
+st.markdown('''Made with 💞 by Hari Prasath N T''')
